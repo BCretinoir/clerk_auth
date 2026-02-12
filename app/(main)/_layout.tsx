@@ -1,17 +1,10 @@
-import { useAuth } from "@clerk/clerk-expo";
-import { Redirect, Slot, Stack } from "expo-router";
+import { MealProvider } from '../../context/MealContext';
+import { Tabs } from 'expo-router';
 
-export default function AuthRooutesLayout() {
-  const { isSignedIn } = useAuth();
-
-  if (!isSignedIn) {
-    return <Redirect href="/sign-in" />;
-  }
-
+export default function MainLayout() {
   return (
-    <View>
-        <Text>Home</Text>
-        
-    </View>
+    <MealProvider>
+        <Tabs/>
+    </MealProvider>
   );
 }
