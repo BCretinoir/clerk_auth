@@ -7,22 +7,19 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { getFoodByBarcode } from "../../../services/openFoodFactsService";
-import { useMeals } from "../../../context/MealContext";
+import { useRouter } from "expo-router";
+import { getFoodByBarcode } from "../../services/openFoodFactsService";
+import { useMeals } from "../../context/MealContext";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
 export default function ScannerScreen() {
-  const { mealId } = useLocalSearchParams<{ mealId: string }>();
   const router = useRouter();
-  const { addFoodToMeal } = useMeals();
+  const { addFoodToMeal, selectedMeal } = useMeals();
 
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
-  if (!permission) {
-    return <View style={styles.container} />;
-  }
+  if (!permission) return <View style={styles.container} />;
 
   if (!permission.granted) {
     return (
@@ -41,27 +38,29 @@ export default function ScannerScreen() {
     if (scanned) return;
     setScanned(true);
 
+    if (!selectedMeal) {
+      Alert.alert("Erreur", "Aucun repas sélectionné");
+      setScanned(false);
+      return;
+    }
+
     const product = await getFoodByBarcode(data);
 
     if (!product) {
       Alert.alert(
         "Produit non trouvé",
         "Ce code-barres n’existe pas dans Open Food Facts.",
-        [{ text: "OK", onPress: () => setScanned(false) }],
+        [{ text: "OK", onPress: () => setScanned(false) }]
       );
       return;
     }
 
     if (Platform.OS === "ios") {
       Alert.prompt(
-        "Quantité (en grammes)",
+        "Quantité (g)",
         `Combien de grammes de ${product.product_name} ?`,
         [
-          {
-            text: "Annuler",
-            style: "cancel",
-            onPress: () => setScanned(false),
-          },
+          { text: "Annuler", style: "cancel", onPress: () => setScanned(false) },
           {
             text: "Ajouter",
             onPress: (quantityStr) => {
@@ -71,29 +70,29 @@ export default function ScannerScreen() {
                 setScanned(false);
                 return;
               }
-              if (!mealId) return;
-              addFoodToMeal(mealId, product, quantity);
+
+              addFoodToMeal(selectedMeal.meal.id, product, quantity);
               router.back();
             },
           },
         ],
         "plain-text",
-        "100",
+        "100"
       );
     } else {
       Alert.alert(
-        "Ajout rapide (Android)",
+        "Ajout rapide",
         `Ajouter 100g de ${product.product_name} ?`,
         [
           { text: "Annuler", onPress: () => setScanned(false) },
           {
             text: "Oui",
             onPress: () => {
-              addFoodToMeal(mealId, product, 100);
+              addFoodToMeal(selectedMeal.meal.id, product, 100);
               router.back();
             },
           },
-        ],
+        ]
       );
     }
   };
@@ -104,10 +103,11 @@ export default function ScannerScreen() {
         style={StyleSheet.absoluteFillObject}
         facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ["ean13", "ean8", "upc_e"],
-        }}
       />
+
+      <View style={styles.frameContainer}>
+        <View style={styles.scanFrame} />
+      </View>
 
       {scanned && (
         <View style={styles.overlay}>
@@ -127,7 +127,7 @@ export default function ScannerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: { flex: 1, backgroundColor: "black" },
   text: { textAlign: "center", marginBottom: 10 },
   button: {
     padding: 16,
@@ -137,6 +137,19 @@ const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
     bottom: 50,
+    width: "100%",
     alignItems: "center",
+  },
+  frameContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scanFrame: {
+    width: 250,
+    height: 150,
+    borderWidth: 2,
+    borderColor: "white",
+    borderRadius: 12,
   },
 });

@@ -4,12 +4,12 @@ import React, {
   useEffect,
   useState,
   ReactNode,
-} from 'react';
-import { useUser } from '@clerk/clerk-expo';
+} from "react";
+import { useUser } from "@clerk/clerk-expo";
 
-import { Meal } from '../models/meal';
-import { Food } from '../models/food';
-import { NutritionTotals } from '../models/nutrition';
+import { Meal } from "../models/meal";
+import { Food } from "../models/food";
+import { NutritionTotals } from "../models/nutrition";
 
 import {
   getMealsByUser,
@@ -17,13 +17,9 @@ import {
   deleteMeal as deleteMealRepo,
   addFoodToMeal as addFoodRepo,
   getMealWithFoods,
-} from '../database/repositories/mealRepository';
+} from "../database/repositories/mealRepository";
 
-import {
-  calculateFoodNutrition,
-  sumNutrition,
-} from '../utils/nutrition';
-
+import { calculateFoodNutrition, sumNutrition } from "../utils/nutrition";
 
 // ===============================
 // TYPES
@@ -42,29 +38,23 @@ type MealContextType = {
   refreshMeals: () => void;
   selectMeal: (mealId: string) => void;
   deleteMeal: (mealId: string) => void;
-  addFoodToMeal: (
-    mealId: string,
-    food: Food,
-    quantity: number
-  ) => void;
+  addFoodToMeal: (mealId: string, food: Food, quantity: number) => void;
 };
 
+// ===============================
+// CONTEXT
+// ===============================
 const MealContext = createContext<MealContextType | null>(null);
 
 // ===============================
 // PROVIDER
 // ===============================
-export const MealProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const MealProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useUser();
 
   const [meals, setMeals] = useState<Meal[]>([]);
   const [todayMeal, setTodayMeal] = useState<Meal | null>(null);
-  const [selectedMeal, setSelectedMeal] =
-    useState<MealWithFoods | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<MealWithFoods | null>(null);
 
   // ===============================
   // INIT
@@ -74,7 +64,7 @@ export const MealProvider = ({
 
     const today = getOrCreateTodayMeal(user.id);
     setTodayMeal(today);
-
+    selectMeal(today.id);
     loadMeals();
   }, [user?.id]);
 
@@ -93,32 +83,38 @@ export const MealProvider = ({
   const selectMeal = (mealId: string) => {
     const data = getMealWithFoods(mealId);
 
-    if (!data.meal) {
+    if (!data?.meal) {
       setSelectedMeal(null);
       return;
     }
 
     const nutritionList = data.foods.map((f: any) =>
-      calculateFoodNutrition(f, f.quantity)
+      calculateFoodNutrition(f, f.quantity),
     );
 
-    setSelectedMeal({
+    const mealWithFoods: MealWithFoods = {
       meal: data.meal,
       foods: data.foods,
       totals: sumNutrition(nutritionList),
-    });
+    };
+
+    setSelectedMeal(mealWithFoods);
+
+    if (todayMeal?.id === mealId) {
+      setTodayMeal(data.meal);
+    }
   };
 
   // ===============================
   // ADD FOOD
   // ===============================
-  const addFoodToMeal = (
-    mealId: string,
-    food: Food,
-    quantity: number
-  ) => {
+  const addFoodToMeal = (mealId: string, food: Food, quantity: number) => {
     addFoodRepo(mealId, food, quantity);
+
+    // Recharger le meal sélectionné
     selectMeal(mealId);
+
+    // Recharger la liste des meals
     loadMeals();
   };
 
@@ -129,6 +125,10 @@ export const MealProvider = ({
     deleteMealRepo(mealId);
     loadMeals();
     setSelectedMeal(null);
+
+    if (todayMeal?.id === mealId) {
+      setTodayMeal(null);
+    }
   };
 
   return (
@@ -154,9 +154,7 @@ export const MealProvider = ({
 export const useMeals = () => {
   const context = useContext(MealContext);
   if (!context) {
-    throw new Error(
-      'useMeals must be used within a MealProvider'
-    );
+    throw new Error("useMeals must be used within a MealProvider");
   }
   return context;
 };

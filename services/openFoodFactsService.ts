@@ -3,9 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const BASE_URL = 'https://world.openfoodfacts.org';
 
-// ===============================
-// 🔎 SEARCH PRODUCTS
-// ===============================
 export const searchFoods = async (
   query: string
 ): Promise<Food[]> => {
@@ -31,9 +28,6 @@ export const searchFoods = async (
 };
 
 
-// ===============================
-// 📷 GET PRODUCT BY BARCODE
-// ===============================
 export const getFoodByBarcode = async (
   barcode: string
 ): Promise<Food | null> => {
@@ -55,15 +49,12 @@ export const getFoodByBarcode = async (
 };
 
 
-// ===============================
-// 🔄 MAPPING OFF → Food
-// ===============================
 const mapProductToFood = (product: any): Food => {
 
   const nutriments = product.nutriments ?? {};
 
   return {
-    id: uuidv4(), // ID interne DB
+    id: uuidv4(),
     barcode: product.code ?? null,
 
     product_name: product.product_name ?? 'Produit inconnu',
@@ -71,7 +62,6 @@ const mapProductToFood = (product: any): Food => {
     image_url: product.image_url ?? null,
     nutriscore: product.nutriscore_grade ?? null,
 
-    // Open Food Facts peut renvoyer energy-kcal_100g ou energy_100g
     energy:
       nutriments['energy-kcal_100g'] ??
       nutriments['energy_100g'] ??

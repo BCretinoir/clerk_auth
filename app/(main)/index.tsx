@@ -7,7 +7,6 @@ export default function MainLayout() {
       <Tabs>
         <Tabs.Screen name="home" />
         <Tabs.Screen name="search" />
-        <Tabs.Screen name="profile" />
       </Tabs>
     </MealProvider>
   );
