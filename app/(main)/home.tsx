@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image  } from "react-native";
 import { useRouter } from "expo-router";
 import { useMeals } from "../../context/MealContext";
 
@@ -54,10 +54,51 @@ export default function HomeScreen() {
             </Text>
 
             {selectedMeal.foods.map((food, index) => (
-              <Text key={index} style={{ fontSize: 14 }}>
-                • {food.product_name} ({food.quantity}g)
-              </Text>
-            ))}
+  <View
+    key={index}
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 8,
+      gap: 10,
+    }}
+  >
+    {food.image_url ? (
+      <Image
+        source={{ uri: food.image_url }}
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 8,
+          backgroundColor: "#eee",
+        }}
+        resizeMode="cover"
+      />
+    ) : (
+      <View
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 8,
+          backgroundColor: "#ddd",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text>🍽️</Text>
+      </View>
+    )}
+
+    <View style={{ flex: 1 }}>
+      <Text style={{ fontWeight: "500" }}>
+        {food.product_name}
+      </Text>
+      <Text style={{ fontSize: 13, color: "#666" }}>
+        {food.quantity}g
+      </Text>
+    </View>
+  </View>
+))}
           </View>
         )}
       </TouchableOpacity>

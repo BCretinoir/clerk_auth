@@ -10,7 +10,7 @@ export default function Page() {
 
   useEffect(() => {
     if (user) {
-      router.replace('/(main)/search');
+      router.replace('/(main)/home');
     }
   }, [user]);
 
