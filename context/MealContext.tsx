@@ -21,9 +21,6 @@ import {
 
 import { calculateFoodNutrition, sumNutrition } from "../utils/nutrition";
 
-// ===============================
-// TYPES
-// ===============================
 type MealWithFoods = {
   meal: Meal;
   foods: (Food & { quantity: number })[];
@@ -41,14 +38,8 @@ type MealContextType = {
   addFoodToMeal: (mealId: string, food: Food, quantity: number) => void;
 };
 
-// ===============================
-// CONTEXT
-// ===============================
 const MealContext = createContext<MealContextType | null>(null);
 
-// ===============================
-// PROVIDER
-// ===============================
 export const MealProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useUser();
 
@@ -56,9 +47,6 @@ export const MealProvider = ({ children }: { children: ReactNode }) => {
   const [todayMeal, setTodayMeal] = useState<Meal | null>(null);
   const [selectedMeal, setSelectedMeal] = useState<MealWithFoods | null>(null);
 
-  // ===============================
-  // INIT
-  // ===============================
   useEffect(() => {
     if (!user?.id) return;
 
@@ -68,18 +56,12 @@ export const MealProvider = ({ children }: { children: ReactNode }) => {
     loadMeals();
   }, [user?.id]);
 
-  // ===============================
-  // LOAD MEALS
-  // ===============================
   const loadMeals = () => {
     if (!user?.id) return;
     const data = getMealsByUser(user.id);
     setMeals(data);
   };
 
-  // ===============================
-  // SELECT MEAL
-  // ===============================
   const selectMeal = (mealId: string) => {
     const data = getMealWithFoods(mealId);
 
@@ -105,22 +87,14 @@ export const MealProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ===============================
-  // ADD FOOD
-  // ===============================
   const addFoodToMeal = (mealId: string, food: Food, quantity: number) => {
     addFoodRepo(mealId, food, quantity);
 
-    // Recharger le meal sélectionné
     selectMeal(mealId);
 
-    // Recharger la liste des meals
     loadMeals();
   };
 
-  // ===============================
-  // DELETE MEAL
-  // ===============================
   const deleteMeal = (mealId: string) => {
     deleteMealRepo(mealId);
     loadMeals();
@@ -148,9 +122,6 @@ export const MealProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// ===============================
-// HOOK
-// ===============================
 export const useMeals = () => {
   const context = useContext(MealContext);
   if (!context) {

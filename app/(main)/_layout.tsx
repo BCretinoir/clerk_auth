@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import { MealProvider } from "../../context/MealContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform } from "react-native";
+import { theme } from "../../design-system";
 
 export default function MainLayout() {
   return (
@@ -9,18 +10,21 @@ export default function MainLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: "#007bff",
-          tabBarInactiveTintColor: "#888",
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.gray800,
           tabBarStyle: {
-            height: 100,
-            paddingBottom: Platform.OS === "android" ? 20 : 10, 
-            paddingTop: 10,
-            backgroundColor: "#fff",
+            height: theme.tabBarHeight.base,
+            paddingBottom:
+              Platform.OS === "android"
+                ? theme.tabBarHeight.paddingBottomAndroid
+                : theme.tabBarHeight.paddingBottomIOS,
+            paddingTop: theme.tabBarHeight.paddingTop,
+            backgroundColor: theme.colors.white,
           },
           tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: "600",
-            marginBottom: 4,
+            fontSize: theme.fontSize.xs,
+            fontWeight: theme.fontWeight.semiBold,
+            marginBottom: theme.spacing.xs,
           },
           tabBarIconStyle: {
             marginBottom: -2,
@@ -36,7 +40,9 @@ export default function MainLayout() {
           name="home"
           options={{
             title: "Accueil",
-            tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="home" size={theme.iconSize.md} color={color} />
+            ),
           }}
         />
 
@@ -44,7 +50,9 @@ export default function MainLayout() {
           name="search"
           options={{
             title: "Recherche",
-            tabBarIcon: ({ color }) => <Ionicons name="search" size={24} color={color} />,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="search" size={theme.iconSize.md} color={color} />
+            ),
           }}
         />
 
@@ -52,7 +60,9 @@ export default function MainLayout() {
           name="scanner"
           options={{
             title: "Scanner",
-            tabBarIcon: ({ color }) => <Ionicons name="barcode" size={24} color={color} />,
+            tabBarIcon: ({ color }) => (
+              <Ionicons name="barcode" size={theme.iconSize.md} color={color} />
+            ),
           }}
         />
       </Tabs>

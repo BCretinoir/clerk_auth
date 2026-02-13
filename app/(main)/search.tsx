@@ -1,17 +1,15 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Platform,
-} from "react-native";
+import { FlatList, Alert, Platform } from "react-native";
 import { useMeals } from "../../context/MealContext";
 import { searchFoods } from "../../services/openFoodFactsService";
 import { Food } from "../../models/food";
+import {
+  Container,
+  View,
+  Text,
+  Input,
+  FoodCard,
+} from "../../design-system";
 
 export default function SearchScreen() {
   const { addFoodToMeal, selectedMeal } = useMeals();
@@ -76,69 +74,45 @@ export default function SearchScreen() {
   };
 
   const renderItem = ({ item }: { item: Food }) => (
-    <View style={styles.card}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.foodName}>{item.product_name}</Text>
-        <Text>{item.brands}</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => handleAddFood(item)}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>+ Ajouter</Text>
-      </TouchableOpacity>
-    </View>
+    <FoodCard
+      food={{
+        product_name: item.product_name,
+        brands: item.brands,
+      }}
+      onAdd={() => handleAddFood(item)}
+    />
   );
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Rechercher un aliment"
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={handleSearch}
-      />
+    <Container>
+      <View padding="xl">
+        <Input
+          placeholder="Rechercher un aliment"
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={handleSearch}
+        />
 
-      {loading && <Text>Recherche en cours...</Text>}
+        {loading && (
+          <Text align="center" style={{ marginTop: 20 }}>
+            Recherche en cours...
+          </Text>
+        )}
 
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ gap: 12, marginTop: 12 }}
-        ListEmptyComponent={
-          !loading && (
-            <Text style={{ textAlign: "center", marginTop: 20 }}>
-              Aucun résultat
-            </Text>
-          )
-        }
-      />
-    </View>
+        <FlatList
+          data={results}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ gap: 12, marginTop: 12 }}
+          ListEmptyComponent={
+            !loading && (
+              <Text align="center" style={{ marginTop: 20 }}>
+                Aucun résultat
+              </Text>
+            )
+          }
+        />
+      </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    borderRadius: 10,
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    backgroundColor: "#f2f2f2",
-    borderRadius: 10,
-  },
-  foodName: { fontWeight: "bold", marginBottom: 4 },
-  addButton: {
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: "#007bff",
-    marginLeft: 12,
-  },
-});

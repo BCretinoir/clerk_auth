@@ -1,16 +1,10 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Platform,
-} from "react-native";
+import { StyleSheet, Alert, Platform, View as RNView } from "react-native";
 import { useRouter } from "expo-router";
 import { getFoodByBarcode } from "../../services/openFoodFactsService";
 import { useMeals } from "../../context/MealContext";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { View, Text, Button, ScanFrame } from "../../design-system";
 
 export default function ScannerScreen() {
   const router = useRouter();
@@ -19,18 +13,18 @@ export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
-  if (!permission) return <View style={styles.container} />;
+  if (!permission) return <RNView style={styles.container} />;
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.text}>
-          Nous avons besoin de la permission caméra
-        </Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={{ color: "white" }}>Donner la permission</Text>
-        </TouchableOpacity>
-      </View>
+      <RNView style={styles.container}>
+        <View center flex={1}>
+          <Text color="textInverse" align="center" style={{ marginBottom: 10 }}>
+            Nous avons besoin de la permission caméra
+          </Text>
+          <Button onPress={requestPermission}>Donner la permission</Button>
+        </View>
+      </RNView>
     );
   }
 
@@ -49,8 +43,8 @@ export default function ScannerScreen() {
     if (!product) {
       Alert.alert(
         "Produit non trouvé",
-        "Ce code-barres n’existe pas dans Open Food Facts.",
-        [{ text: "OK", onPress: () => setScanned(false) }]
+        "Ce code-barres n'existe pas dans Open Food Facts.",
+        [{ text: "OK", onPress: () => setScanned(false) }],
       );
       return;
     }
@@ -60,7 +54,11 @@ export default function ScannerScreen() {
         "Quantité (g)",
         `Combien de grammes de ${product.product_name} ?`,
         [
-          { text: "Annuler", style: "cancel", onPress: () => setScanned(false) },
+          {
+            text: "Annuler",
+            style: "cancel",
+            onPress: () => setScanned(false),
+          },
           {
             text: "Ajouter",
             onPress: (quantityStr) => {
@@ -77,79 +75,52 @@ export default function ScannerScreen() {
           },
         ],
         "plain-text",
-        "100"
+        "100",
       );
     } else {
-      Alert.alert(
-        "Ajout rapide",
-        `Ajouter 100g de ${product.product_name} ?`,
-        [
-          { text: "Annuler", onPress: () => setScanned(false) },
-          {
-            text: "Oui",
-            onPress: () => {
-              addFoodToMeal(selectedMeal.meal.id, product, 100);
-              router.back();
-            },
+      Alert.alert("Ajout rapide", `Ajouter 100g de ${product.product_name} ?`, [
+        { text: "Annuler", onPress: () => setScanned(false) },
+        {
+          text: "Oui",
+          onPress: () => {
+            addFoodToMeal(selectedMeal.meal.id, product, 100);
+            router.back();
           },
-        ]
-      );
+        },
+      ]);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <RNView style={styles.container}>
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       />
 
-      <View style={styles.frameContainer}>
-        <View style={styles.scanFrame} />
-      </View>
+      <ScanFrame />
 
       {scanned && (
-        <View style={styles.overlay}>
-          <Text style={{ color: "white", marginBottom: 20 }}>
+        <View style={styles.overlay} centerHorizontal>
+          <Text color="textInverse" style={{ marginBottom: 20 }}>
             Produit détecté...
           </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => setScanned(false)}
-          >
-            <Text style={{ color: "white" }}>Scanner à nouveau</Text>
-          </TouchableOpacity>
+          <Button onPress={() => setScanned(false)}>Scanner à nouveau</Button>
         </View>
       )}
-    </View>
+    </RNView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "black" },
-  text: { textAlign: "center", marginBottom: 10 },
-  button: {
-    padding: 16,
-    borderRadius: 10,
-    backgroundColor: "#007bff",
+  container: {
+    flex: 1,
+    backgroundColor: "black",
   },
   overlay: {
     position: "absolute",
     bottom: 50,
     width: "100%",
-    alignItems: "center",
-  },
-  frameContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scanFrame: {
-    width: 250,
-    height: 150,
-    borderWidth: 2,
-    borderColor: "white",
-    borderRadius: 12,
   },
 });
